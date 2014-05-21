@@ -1,6 +1,7 @@
 (ns crawler.fanfiction
   (:require [net.cgrand.enlive-html :as e]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:use [hiccup.core :only [html]]))
 
 
 (defn fetch
@@ -20,10 +21,23 @@
 
 (defn chapter
   [id chpt]
-  (str/join "\n\n" (e/select (fetch id chpt) [:#storytext :p e/text-node])))
+  (e/select (fetch id chpt) [:#storytext :p e/text-node]))
 
 
 (defn chapters
   [id]
-  (for [x (range 1 (inc (count (index id))))]
-    (chapter id x)))
+  (for [[idx title] (map list (drop 1 (range)) (index id))]
+    {:title title :content (chapter id idx)}))
+
+
+(defn ->html
+  [chpts]
+  (html
+   [:html
+    (->> (map (fn [{:keys [title content]}]
+                (conj (map #(vec [:p %]) content)
+                      [:h1 title]))
+              chpts)
+         (apply concat)
+         (cons :body)
+         (vec))]))
