@@ -1,15 +1,10 @@
 (ns crawler.tripletriad
-  (:require [net.cgrand.enlive-html :as e]))
+  (:require [crawler.core :refer [fetch]]
+            [net.cgrand.enlive-html :as e]))
 
 
-(defn fetch-cards
-  []
-  (e/html-resource (java.net.URL. "http://www.galbadiax.com/ff8/card-list.php")))
-
-
-(defn fetch-images
-  []
-  (e/html-resource (java.net.URL. "http://finalfantasy.wikia.com/wiki/List_of_Triple_Triad_Cards")))
+(def CARDS "http://www.galbadiax.com/ff8/card-list.php")
+(def IMAGES "http://finalfantasy.wikia.com/wiki/List_of_Triple_Triad_Cards")
 
 
 (defn parse-score
@@ -33,7 +28,7 @@
 
 (defn cards
   []
-  (for [row (drop 1 (e/select (fetch-cards) [:tr]))
+  (for [row (drop 1 (e/select (fetch CARDS) [:tr]))
         :let [[[lvl] [name] [top] [bottom] [left] [right] [element] [location]]
               (map :content (:content row))]]
     {:level (Integer/parseInt lvl)
@@ -48,7 +43,7 @@
 
 (defn images
   []
-  (for [tag (e/select (fetch-images) [:table :img])
+  (for [tag (e/select (fetch IMAGES) [:table :img])
         :let [url (get-in tag [:attrs :src])
               alt (get-in tag [:attrs :alt])
               [_ name] (re-find #"TT(.*)$" alt)]
