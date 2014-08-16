@@ -71,11 +71,4 @@
        [:h2 (:title article) "-" (:timestamp article)]
        [:div
         (for [para (:content article)]
-          [:p para])]
-       [:div
-        (for [comment (:comments article)]
-          [:div
-           [:h3 (:author comment) "-" (:datetime comment)]
-           [:div
-            (for [para (:content comment)]
-              [:p para])]])]])]])
+          [:p para])]])]])
