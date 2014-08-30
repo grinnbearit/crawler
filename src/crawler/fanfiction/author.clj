@@ -45,13 +45,14 @@
           (extract-metadata [n]
             (let [blurb (->> (e/select node [:div.z-padtop2.xgray])
                              first :content (apply str))
-                  [_ rating language _ genres favs _ follows]
-                  (re-find #"Rated: ([^\s]+) - ([^\s]+)( - ([^\s]+)?)? - Chapters: .+ - Favs: ((\d|,)+)? - Follows: ((\d|,)+)?" blurb)]
+                  [_ rating language _ genres] (re-find #"Rated: ([^\s]+) - ([^\s]+)( - ([^\s]+)?)? - Chapters" blurb)
+                  [_ favs] (re-find #"Favs: ((\d|,)+)" blurb)
+                  [_ follows] (re-find #"Follows: ((\d|,)+)" blurb)]
               {:rating rating
                :language language
                :genres (if genres (str/split genres #"/") [])
-               :favourites (parse-long favs)
-               :follows (parse-long follows)}))]
+               :favourites (if favs (parse-long favs) 0)
+               :follows (if follows (parse-long follows) 0)}))]
 
     (let [metadata (extract-metadata node)]
       {:id (get-in node [:attrs :data-storyid])
