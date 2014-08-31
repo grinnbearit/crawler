@@ -8,7 +8,7 @@
   ([id]
      (page id 1))
   ([id chapter]
-     (format "https://www.fanfiction.net/s/%d/%d/" id chapter)))
+     (format "https://www.fanfiction.net/s/%s/%d/" id chapter)))
 
 
 (defn index
