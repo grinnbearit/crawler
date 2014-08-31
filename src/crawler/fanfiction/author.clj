@@ -1,7 +1,8 @@
 (ns crawler.fanfiction.author
   (:require [crawler.core :refer [fetch]]
             [clojure.string :as str]
-            [net.cgrand.enlive-html :as e])
+            [net.cgrand.enlive-html :as e]
+            [clojure.set :as set])
   (:import [java.util Date]))
 
 
@@ -110,12 +111,10 @@
              (when (seq unseen)
                (let [id (first unseen)
                      auth (author id)
-                     fav-auths (->> (:favourite-authors auth)
-                                    (remove seen))
-                     fav-story-auths (->> (:favourite-stories auth)
-                                          (map :author)
-                                          (remove :seen))]
-                 (cons auth (fetch-authors (conj seen id) (->> (disj unseen id)
-                                                               (into fav-auths)
-                                                               (into fav-story-auths))))))))]
+                     fav-auths (:favourite-authors auth)
+                     fav-story-auths (map :author (:favourite-stories auth))]
+                 (cons auth (fetch-authors (conj seen id) (-> (into unseen fav-auths)
+                                                              (into fav-story-auths)
+                                                              (disj id)
+                                                              (set/difference seen))))))))]
     (fetch-authors #{} (set seed-ids))))
