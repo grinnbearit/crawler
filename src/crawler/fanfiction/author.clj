@@ -105,16 +105,19 @@
 
 (defn author-seq
   "lazy sequence of authors, populated by a depth first search starting with a seed list of ids"
-  [seed-ids]
-  (letfn [(fetch-authors [seen unseen]
-            (lazy-seq
-             (when (seq unseen)
-               (let [id (first unseen)
-                     auth (author id)
-                     fav-auths (:favourite-authors auth)
-                     fav-story-auths (map :author (:favourite-stories auth))]
-                 (cons auth (fetch-authors (conj seen id) (-> (into unseen fav-auths)
-                                                              (into fav-story-auths)
-                                                              (disj id)
-                                                              (set/difference seen))))))))]
-    (fetch-authors #{} (set seed-ids))))
+  ([unseen-ids]
+     (author-seq unseen-ids #{}))
+  ([unseen-ids seen-ids]
+     (letfn [(fetch-authors [unseen seen]
+               (lazy-seq
+                (when (seq unseen)
+                  (let [id (first unseen)
+                        auth (author id)
+                        fav-auths (:favourite-authors auth)
+                        fav-story-auths (map :author (:favourite-stories auth))]
+                    (cons auth (fetch-authors (-> (into unseen fav-auths)
+                                                  (into fav-story-auths)
+                                                  (disj id)
+                                                  (set/difference seen))
+                                              (conj seen id)))))))]
+       (fetch-authors (set unseen-ids) (set seen-ids)))))
