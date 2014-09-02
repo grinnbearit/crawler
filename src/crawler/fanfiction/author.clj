@@ -19,7 +19,7 @@
 
 (defn- parse-date
   [txt]
-  (Date. (Long/parseLong txt)))
+  (Date. (* 1000 (Long/parseLong txt))))
 
 
 (defn- parse-long
