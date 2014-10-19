@@ -41,7 +41,7 @@
                 (str/split #" & ")))
 
           (complete? [n]
-            (= "2" (get-in node [:attrs :data-status])))
+            (= "2" (get-in node [:attrs :data-statusid])))
 
           (extract-metadata [n]
             (let [blurb (->> (e/select node [:div.z-padtop2.xgray])
