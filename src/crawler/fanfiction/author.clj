@@ -2,7 +2,8 @@
   (:require [crawler.core :refer [fetch]]
             [clojure.string :as str]
             [net.cgrand.enlive-html :as e]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            [swissknife.collections :refer [distinct-queue]])
   (:import [java.util Date]))
 
 
@@ -104,20 +105,19 @@
 
 
 (defn author-seq
-  "lazy sequence of authors, populated by a depth first search starting with a seed list of ids"
+  "lazy sequence of authors, populated by a breadth first search starting with a seed list of ids"
   ([unseen-ids]
-     (author-seq unseen-ids #{}))
+   (author-seq unseen-ids #{}))
   ([unseen-ids seen-ids]
-     (letfn [(fetch-authors [unseen seen]
-               (lazy-seq
-                (when (seq unseen)
-                  (let [id (first unseen)
-                        auth (author id)
-                        fav-auths (:favourite-authors auth)
-                        fav-story-auths (map :author (:favourite-stories auth))]
-                    (cons auth (fetch-authors (-> (into unseen fav-auths)
-                                                  (into fav-story-auths)
-                                                  (disj id)
-                                                  (set/difference seen))
-                                              (conj seen id)))))))]
-       (fetch-authors (set unseen-ids) (set seen-ids)))))
+   (letfn [(fetch-authors [unseen seen]
+             (lazy-seq
+              (when (seq unseen)
+                (let [id (peek unseen)
+                      auth (author id)
+                      new-ids (-> (into #{} (:favourite-authors auth))
+                                  (into (map :author (:favourite-stories auth)))
+                                  (set/difference seen))]
+                  (cons auth (fetch-authors (into (pop unseen) new-ids)
+                                            (conj seen id)))))))]
+
+     (fetch-authors (into (distinct-queue) unseen-ids) (set seen-ids)))))
