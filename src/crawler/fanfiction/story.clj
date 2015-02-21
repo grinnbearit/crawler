@@ -6,9 +6,9 @@
 
 (defn page
   ([id]
-     (page id 1))
+   (page id 1))
   ([id chapter]
-     (format "https://www.fanfiction.net/s/%s/%d/" id chapter)))
+   (format "https://www.fanfiction.net/s/%s/%d/" id chapter)))
 
 
 (defn index
@@ -41,3 +41,13 @@
          (apply concat)
          (cons :body)
          (vec))]))
+
+
+(defn ->org
+  [name chpts]
+  (->> (for [{:keys [title content]} chpts]
+         (->> (interleave content (repeat "\n\n"))
+              (cons (format "** %s\n" title))
+              (apply str)))
+       (cons (format "* %s\n" name))
+       (apply str)))
